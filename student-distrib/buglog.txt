@@ -1,0 +1,631 @@
+<=========================================================>
+<=================>    BUG LOG HEADER   <=================>
+<=========================================================>
+Assignment:
+    MP3
+CheckPoint:
+    CP1
+CreateTime:
+    2022.10.16
+<--------------------------------------------------------->
+                          BUG 1                          
+<--------------------------------------------------------->
+Time:
+    2022.10.16
+Description:
+    Can't enter the kernel, keep rebooting.
+Solution:
+    Something wrong happens in paging, so close everything in the kernel. And update something about loading gdt.
+    **update: finally found out the issue is load cr4 after cr0, so everything goes wrong.
+
+<--------------------------------------------------------->
+                          BUG 2                          
+<--------------------------------------------------------->
+Time:
+    2022.10.16
+Description:
+    Fail at null pointer test. printing *NULL output 
+    -268370093 without raising interrupt. Potential bug 
+    at paging initialization.
+Solution:
+    Found that we set wrong value in present. The table of address 0 exists.
+
+<--------------------------------------------------------->
+                          BUG 3                          
+<--------------------------------------------------------->
+Time:
+    2022.10.16
+Description:
+    The signal from RTC just appear once.
+Solution:
+    An outb() is set wrong, we wrote outb(port,register) rather than outb(register,port), so we can't make any action to interrupts.
+
+
+<--------------------------------------------------------->
+                          BUG 4                          
+<--------------------------------------------------------->
+Time:
+    2022.10.16
+Description:
+    Can't pass the test of boundary, something doesn't exist appears.
+Solution:
+    We set every present in page table as 1. It means everyting exists which is wrong.
+
+
+<--------------------------------------------------------->
+                          BUG 5                          
+<--------------------------------------------------------->
+Time:
+    2022.10.16
+Description:
+    Can't pass info_mem
+Solution:
+    We set every present in page table as 1. It means everyting exists which is wrong. And didn't set video memory as existing.
+
+<--------------------------------------------------------->
+                          BUG 6                          
+<--------------------------------------------------------->
+Time:
+    2022.10.16
+Description:
+    When exceptions happens, rtc still runs.
+Solution:
+    Set an cli at the beginning of err_handle(), close interrupts.
+
+
+<--------------------------------------------------------->
+                          BUG 7                         
+<--------------------------------------------------------->
+Time:
+    2022.10.16
+Description:
+    Many compile errors and paging doesn't work.
+Solution:
+    Write separate .S files instead of inline assembly
+
+
+
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP2
+CreateTime:
+    2022.10.22
+
+<--------------------------------------------------------->
+                          BUG 1                         
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test1
+    can't see anything in the screen
+Solution:
+    set a global pointer inode_st to a wrong data structure, so cause errors.
+
+<--------------------------------------------------------->
+                          BUG 2                         
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test1
+    Can't print file name in the screen.
+Solution:
+    In a for loop, we use a wrong index i instead j. So this loop does't work 
+
+<--------------------------------------------------------->
+                          BUG 3                        
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test1
+    Can't print file size and type in the screen.
+Solution:
+    In the printf function, we use "%zu", so cause things wrong. we change the "%zu" to "%d" then everything fixed.
+
+<--------------------------------------------------------->
+                          BUG 4                        
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test1
+    Can't print file size and type in the screen.
+Solution:
+    In the printf function, we use "%zu", so cause things wrong. we change the "%zu" to "%d" then everything fixed.
+
+<--------------------------------------------------------->
+                          BUG 5                         
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test2
+    something wrong appears in the screen
+Solution:
+    When initialize the file system, add a wrong pointer to a global pointer datab_st, so this pointer points to wrong places later.
+
+<--------------------------------------------------------->
+                          BUG 6                         
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test2
+    Can't pass the test to print everything in verylargetextwithverylongname.txt
+Solution:
+    Only compare the length which is smaller than FILE_NAME 32.
+
+
+<--------------------------------------------------------->
+                          BUG 7                         
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test2
+    Can't print anything when we wants to read data.
+Solution:
+    set the inode_f into a wrong data structure, so the address it points to is not the right one.
+
+<--------------------------------------------------------->
+                          BUG 8                        
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test2
+    always return fails when we call read_data function 
+Solution:
+    set a wrong value to the comparation. Change it to the proper one.
+
+<--------------------------------------------------------->
+                          BUG 9                        
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    filesystem_test2
+    Can't print file name and anything else.
+Solution:
+    Didn't set a temporary value as a pointer. change it to pointer then this bug is fixed
+
+<--------------------------------------------------------->
+                          BUG 10                        
+<--------------------------------------------------------->
+Time:
+    2022.10.22
+Description:
+    Can't show things from the top of the screen.
+Solution:
+    Change screen_x and screen_y to 0 in the clear() function in lib.c, then kernel.c call it and set everything from the top in fault.
+
+<--------------------------------------------------------->
+                          BUG 11                        
+<--------------------------------------------------------->
+Time:
+    2022.10.24
+Description:
+    Characters always appear twice.
+Solution:
+    The reason is we forgot to deal with the release of the characters. They should be ignored, but we let them stay there so the same character as the previous pressed one appeared again.
+
+
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP3
+CreateTime:
+    2022.11.7
+
+<--------------------------------------------------------->
+                          BUG 1                         
+<--------------------------------------------------------->
+Time:
+    2022.11.6
+Description:
+    always rebooting once entered.
+Solution:
+    There are many factors that contribute to this problem. What finally solved the problem was that we found that we were using a pointer to Pcb_t when calculating the value of tss.esp0, and the format of the pointer was wrong, resulting in the wrong value of esp0.
+    It took us 4 hours to solve this problem.
+
+<--------------------------------------------------------->
+                          BUG 2                        
+<--------------------------------------------------------->
+Time:
+    2022.11.6 - 2022.11.7
+Description:
+    paging fault when we start a new process over shell
+Solution:
+    In halt, when we set the returned paging, the address in entry is calculated incorrectly and is always 1 more than the correct value, which causes our paging fault.
+Although this problem was stupid, we spent the whole night without solving it until the next morning when we wrote the comment.
+
+<--------------------------------------------------------->
+                          BUG 3                        
+<--------------------------------------------------------->
+Time:
+    2022.11.7
+Description:
+    syserr - test4: The wrong file name was successfully read
+Solution:
+    The source of the problem is obviously because we are only comparing the first few bits that match when processing read_dentry_by_name. So we added the length comparison and that solved the problem. 
+    It took us 0.5 hours.
+
+<--------------------------------------------------------->
+                          BUG 4                        
+<--------------------------------------------------------->
+Time:
+    2022.11.7
+Description:
+    syserr - test7 
+Solution:
+    After seeing this test error, we read syserr.c and then found that read and write here must return -1. We realized that the functions of stdin and stdout should not be confused.
+    It took us 0.5 hours.
+
+<--------------------------------------------------------->
+                          BUG 5                        
+<--------------------------------------------------------->
+Time:
+    2022.11.7
+Description:
+    unlimited process number 
+Solution:
+    Our friend told us we should limit the max number of process to 6, we ignored it in instruction. Otherwise, when we type "shell" 6 times, it will not report error.
+    It took us 10 mins.
+
+<--------------------------------------------------------->
+                          BUG 6                        
+<--------------------------------------------------------->
+Time:
+    2022.11.6
+Description:
+    EIP calculation
+Solution:
+    When reading EIP from the file (24-27 B), our reading order is wrong, then the order with bytes is reversed.
+    It took us 0.5 hr.
+
+<--------------------------------------------------------->
+                          BUG 7                        
+<--------------------------------------------------------->
+Time:
+    2022.11.7
+Description:
+    ls cannot list all the files
+Solution:
+    We read ls file, and found that we need to iterate dir list by our own. So we use "pos" in Pcb structure to count the current position of the list.
+    It took us 1 hr.
+ 
+
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 1                         
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    terminal can delete ece391OS>.
+Solution:
+    Set in terminal that when buffer doesn't have anything, doesn't allow backspace work.
+    It took us 10 minutes to solve this problem.
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 2                         
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    'exit' didn't work.
+Solution:
+    Instead of reading the last carriage return in the terminal read, set it to a newline "\n".
+    It took us 30 minutes to solve this problem.
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 3                         
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    When we cat frame0.txt, the graph appears continuesly.
+Solution:
+    It is only allowed to read this content once and change the offset on the second entry.
+    It took us 30 minutes to solve this problem.
+
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 4                        
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    When we use grep, page-fault happens.
+Solution:
+    When we are copying the contents of the file into the buffer, an error occurs when using the pointer. We added an extra parenthesis that made the pointer point to the wrong location. Just remove this parenthesis.
+    It took us 30 minutes to solve this problem.
+
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 5                        
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    When we use cat, page-fault happens.
+Solution:
+    When calculating the index in the read data, there is a judgment error, one block is not full but it is wrongly thought to be full, and there is an error when reading. When calculating the end position, add one and it will be correct.
+    It took us 30 minutes to solve this problem.
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 6                        
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    An error was reported while testing, showing that there was an error in the return value.
+Solution:
+    There is a difference between the return value being 0 and -1. When we read the end we mistakenly used -1 as the return value, which led to a boundary error in the upper level function for the judgment. Changing the return value to 0 got it right.
+    It took us 30 minutes to solve this problem.
+
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 7                        
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    Our grep gets stuck in the middle. After gdb we found out that somewhere fd was changed from 3 to 0. This caused it to keep waiting for our input, thus getting stuck.
+Solution:
+    In read and close, if it is a grep command while fd is not equal to 2 (read the root directory), force fd to be equal to 3.
+    It took us 5 hours to solve this problem.
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 8                        
+<--------------------------------------------------------->
+Time:
+    2022.11.12
+Description:
+    When page fault occurs it will be stuck and cannot return, indicating that the return of our exception has not been handled.
+Solution:
+    We do not process exceptions. We solved this problem by changing the dead loop in the exceptions to halt, and setting the return value of halt in this case to 256.
+    It took us 15 minutes to solve this problem.
+
+Assignment:
+    MP3
+CheckPoint:
+    CP4
+CreateTime:
+    2022.11.13
+
+<--------------------------------------------------------->
+                          BUG 9                        
+<--------------------------------------------------------->
+Time:
+    2022.11.13
+Description:
+    cat frame0.txt & cat frame1.txt, cannot print the '\n' at the end of the file
+Solution:
+    Our copy function is wrong, although we don't know the reason. We use memcpy to solve it.
+    It took us 5 minutes to solve this problem.
+
+
+
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP5
+CreateTime:
+    2022.12.3
+
+<--------------------------------------------------------->
+                          BUG 1                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    page fault
+Solution:
+    esp ebp is saved to child in execute, and halt is taken from parent, resulting in page fault.Save them to the parent and the error is fixed.
+    take 3 hrs to fix it
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP5
+CreateTime:
+    2022.12.3
+
+<--------------------------------------------------------->
+                          BUG 2                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    Only one third of the input will be executed
+Solution:
+    The terminal read signal should wait for the running terminal instead of the display one, resulting in only one third of the input being executed
+    take about 1 hour to fix it
+
+
+Assignment:
+    MP3
+CheckPoint:
+    CP5
+CreateTime:
+    2022.12.3
+
+<--------------------------------------------------------->
+                          BUG 3                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    When processing a process switch, a copy of the struct for the current terminal is created instead of a reference pointer. Therefore no change is made to the actual terminal.
+Solution:
+    Use & to get the contents of the actual terminal struct.
+    take 1 hour to fix it
+
+Assignment:
+    MP3
+CheckPoint:
+    CP5
+CreateTime:
+    2022.12.3
+
+<--------------------------------------------------------->
+                          BUG 4                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    reboot at startup
+Solution:
+    Through gdb we found that idt should init in front of pit and rtc, otherwise it will reboot because pit has already started sending interrupt
+    It took half an hour to solve this problem
+    
+Assignment:
+    MP3
+CheckPoint:
+    CP5
+CreateTime:
+    2022.12.3
+
+<--------------------------------------------------------->
+                          BUG 5                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    page fault, through gdb to locate a dentry in the file systerm.
+Solution:
+    Dereference the wild pointer, gdb found that this pointer is located at 0-4mb, is the page we did not open
+    Spent half an hour solving this problem
+
+<--------------------------------------------------------->
+                          BUG 6                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    The frequency of pingpong has slowed down
+Solution:
+    Each terminal has a separate rtc (virtual) and the rtc appears as an open file in the fd array of the process. So we need to process them separately.
+    an hour
+
+
+<--------------------------------------------------------->
+                          BUG 7                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    When running fish, fish appears in all three terminals.
+Solution:
+    There should be separate locations for vidmap for different terminals.
+    an hour
+
+<--------------------------------------------------------->
+                          BUG 8                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    Nothing at startup
+Solution:
+    When an error occurs in putc, printf prints the error report, creating a dead loop
+    10 mins
+
+<--------------------------------------------------------->
+                          BUG 9                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    The cursor is flying around.
+Solution:
+    screen and cursor update is different, the three terminals should be separated and recorded separately.
+    20 mins
+
+<--------------------------------------------------------->
+                          BUG 10                         
+<--------------------------------------------------------->
+Time:
+    2022.12.3
+Description:
+    All running files are printed in the display terminal.
+Solution:
+    terminal write is not necessarily displayed in the display terminal, but may also be behind the silent running terminal (like pingpong, it calls terminal_write)
+    20 mins
+
+
